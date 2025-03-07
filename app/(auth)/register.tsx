@@ -1,38 +1,48 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Switch, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Lock, Mail, Eye, EyeOff } from 'lucide-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Lock, Mail, User, Eye, EyeOff, ArrowLeft } from 'lucide-react-native';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleRegister = () => {
+    if (!fullName || !email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
 
-    try {
-      if (rememberMe) {
-        await AsyncStorage.setItem('rememberedEmail', email);
-      } else {
-        await AsyncStorage.removeItem('rememberedEmail');
-      }
-      
-      // In production, implement actual authentication
-      router.replace('/(tabs)');
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
     }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    // In production, implement actual registration
+    router.replace('/(tabs)');
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <Image
         source={{ uri: 'https://images.unsplash.com/photo-1581091226825-c6a89e7e4801?q=80&w=2400&auto=format&fit=crop' }}
         style={styles.backgroundImage}
@@ -40,14 +50,36 @@ export default function LoginScreen() {
       <View style={styles.overlay} />
       
       <View style={styles.content}>
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <ArrowLeft color="#fff" size={24} />
+        </TouchableOpacity>
+
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Monitor your factory in real-time</Text>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Join our predictive maintenance platform</Text>
         </View>
 
         <View style={styles.form}>
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
           
+          <View style={styles.inputContainer}>
+            <User size={20} color="#666" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              placeholderTextColor="#666"
+              value={fullName}
+              onChangeText={text => {
+                setFullName(text);
+                setError('');
+              }}
+              autoCapitalize="words"
+            />
+          </View>
+
           <View style={styles.inputContainer}>
             <Mail size={20} color="#666" style={styles.inputIcon} />
             <TextInput
@@ -89,38 +121,48 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.rememberContainer}>
-            <View style={styles.rememberMe}>
-              <Switch
-                value={rememberMe}
-                onValueChange={setRememberMe}
-                trackColor={{ false: '#ddd', true: '#007AFF' }}
-                thumbColor={Platform.OS === 'ios' ? '#fff' : rememberMe ? '#fff' : '#f4f3f4'}
-              />
-              <Text style={styles.rememberText}>Remember me</Text>
-            </View>
-            <Link href="/forgot-password" style={styles.forgotPassword}>
-              Forgot Password?
-            </Link>
+          <View style={styles.inputContainer}>
+            <Lock size={20} color="#666" style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Confirm Password"
+              placeholderTextColor="#666"
+              value={confirmPassword}
+              onChangeText={text => {
+                setConfirmPassword(text);
+                setError('');
+              }}
+              secureTextEntry={!showConfirmPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={styles.eyeIcon}
+            >
+              {showConfirmPassword ? (
+                <EyeOff size={20} color="#666" />
+              ) : (
+                <Eye size={20} color="#666" />
+              )}
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity 
-            style={styles.loginButton} 
-            onPress={handleLogin}
+            style={styles.registerButton} 
+            onPress={handleRegister}
             activeOpacity={0.8}
           >
-            <Text style={styles.loginButtonText}>Sign In</Text>
+            <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account?</Text>
-            <Link href="/register" style={styles.registerLink}>
-              Sign Up
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account?</Text>
+            <Link href="/login" style={styles.loginLink}>
+              Sign In
             </Link>
           </View>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -128,6 +170,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   backgroundImage: {
     position: 'absolute',
@@ -146,6 +191,17 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'flex-end',
     paddingBottom: 50,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     marginBottom: 40,
@@ -198,22 +254,7 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 8,
   },
-  rememberContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rememberMe: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  rememberText: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: '#666',
-  },
-  loginButton: {
+  registerButton: {
     backgroundColor: '#007AFF',
     height: 56,
     borderRadius: 12,
@@ -221,29 +262,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  loginButtonText: {
+  registerButtonText: {
     fontFamily: 'Inter-SemiBold',
     color: '#fff',
     fontSize: 16,
   },
-  forgotPassword: {
-    fontFamily: 'Inter-Regular',
-    color: '#007AFF',
-    fontSize: 14,
-  },
-  registerContainer: {
+  loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     marginTop: 16,
   },
-  registerText: {
+  loginText: {
     fontFamily: 'Inter-Regular',
     color: '#666',
     fontSize: 14,
   },
-  registerLink: {
+  loginLink: {
     fontFamily: 'Inter-SemiBold',
     color: '#007AFF',
     fontSize: 14,

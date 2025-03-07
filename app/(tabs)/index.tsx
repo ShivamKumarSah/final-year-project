@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, ChevronRight } from 'lucide-react-native';
 
@@ -32,6 +32,14 @@ export default function HomeScreen() {
       image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=300&auto=format&fit=crop'
     },
   ];
+
+  const touchableProps = Platform.select({
+    web: {},
+    default: {
+      accessibilityHint: 'View machine details',
+      accessibilityRole: 'button'
+    }
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -70,7 +78,9 @@ export default function HomeScreen() {
               style={[
                 styles.machineCard,
                 machine.status === 'warning' && styles.warningCard
-              ]}>
+              ]}
+              {...touchableProps}
+            >
               <Image 
                 source={{ uri: machine.image }}
                 style={styles.machineImage}
