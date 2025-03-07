@@ -11,7 +11,7 @@ export default function HomeScreen() {
       temp: '65°C', 
       vibration: '2.3 Hz', 
       lastUpdate: '2 min ago',
-      image: 'https://images.unsplash.com/photo-1565087170449-fa23854a6100?q=80&w=300&auto=format&fit=crop'
+      image: 'https://images.unsplash.com/photo-1666618090858-fbcee636bd3e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
     },
     { 
       id: 2, 
@@ -20,7 +20,7 @@ export default function HomeScreen() {
       temp: '82°C', 
       vibration: '4.7 Hz', 
       lastUpdate: '1 min ago',
-      image: 'https://images.unsplash.com/photo-1581091226825-c6a89e7e4801?q=80&w=300&auto=format&fit=crop'
+      image: 'https://plus.unsplash.com/premium_photo-1661877204567-cd31b5de1d0c?q=80&w=2040&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
     },
     { 
       id: 3, 
@@ -29,17 +29,24 @@ export default function HomeScreen() {
       temp: '71°C', 
       vibration: '1.9 Hz', 
       lastUpdate: '5 min ago',
-      image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=300&auto=format&fit=crop'
+      image: 'https://plus.unsplash.com/premium_photo-1661962751752-cbf6a170c837?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
     },
   ];
 
-  const touchableProps = Platform.select({
-    web: {},
-    default: {
-      accessibilityHint: 'View machine details',
-      accessibilityRole: 'button'
+  // Platform-specific accessibility props
+  const getAccessibilityProps = (machine: typeof machines[0]) => {
+    if (Platform.OS === 'web') {
+      return {
+        role: 'button',
+        'aria-label': `View details for ${machine.name}`,
+      };
     }
-  });
+    return {
+      accessibilityRole: 'button',
+      accessibilityHint: `View details for ${machine.name}`,
+      accessibilityLabel: machine.name,
+    };
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -79,7 +86,7 @@ export default function HomeScreen() {
                 styles.machineCard,
                 machine.status === 'warning' && styles.warningCard
               ]}
-              {...touchableProps}
+              {...getAccessibilityProps(machine)}
             >
               <Image 
                 source={{ uri: machine.image }}

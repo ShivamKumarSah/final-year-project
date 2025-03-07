@@ -4,29 +4,46 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SplashScreen } from 'expo-router';
-import { View, Image, Text, StyleSheet } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { View, Image, Text, StyleSheet, useColorScheme } from 'react-native';
+import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated';
 
 function CustomSplash() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <Animated.View 
       entering={FadeIn.duration(1000)}
       exiting={FadeOut.duration(500)}
-      style={styles.splashContainer}
+      style={[styles.splashContainer, isDark && styles.splashContainerDark]}
     >
       <Image
         source={{ uri: 'https://images.unsplash.com/photo-1581091226825-c6a89e7e4801?q=80&w=2400&auto=format&fit=crop' }}
         style={styles.backgroundImage}
       />
-      <View style={styles.overlay} />
+      <View style={[styles.overlay, isDark && styles.overlayDark]} />
       <View style={styles.content}>
-        <Image
+        <Animated.Image
+          entering={ZoomIn.duration(1000)}
           source={{ uri: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=300&auto=format&fit=crop' }}
           style={styles.logo}
         />
-        <Text style={styles.appName}>Factory Monitor</Text>
-        <Text style={styles.tagline}>Real-Time Predictive Maintenance</Text>
-        <View style={styles.loader} />
+        <Animated.Text 
+          entering={FadeIn.duration(1000).delay(300)}
+          style={[styles.appName, isDark && styles.textDark]}
+        >
+          Factory Monitor
+        </Animated.Text>
+        <Animated.Text 
+          entering={FadeIn.duration(1000).delay(600)}
+          style={[styles.tagline, isDark && styles.textDark]}
+        >
+          Real-Time Predictive Maintenance
+        </Animated.Text>
+        <Animated.View 
+          entering={ZoomIn.duration(1000).delay(900)}
+          style={styles.loader}
+        />
       </View>
     </Animated.View>
   );
@@ -34,6 +51,7 @@ function CustomSplash() {
 
 export default function RootLayout() {
   useFrameworkReady();
+  const colorScheme = useColorScheme();
 
   const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': Inter_400Regular,
@@ -58,7 +76,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </>
   );
 }
@@ -66,6 +84,9 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   splashContainer: {
     flex: 1,
+    backgroundColor: '#000',
+  },
+  splashContainerDark: {
     backgroundColor: '#000',
   },
   backgroundImage: {
@@ -79,6 +100,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  overlayDark: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
   },
   content: {
     flex: 1,
@@ -104,6 +128,9 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     marginBottom: 48,
   },
+  textDark: {
+    color: '#fff',
+  },
   loader: {
     width: 40,
     height: 40,
@@ -111,6 +138,5 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: 'rgba(255,255,255,0.1)',
     borderTopColor: '#fff',
-    animation: 'spin 1s linear infinite',
   },
 });

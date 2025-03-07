@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Switch, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+
+const DEMO_CREDENTIALS = {
+  email: 'root@example.com',
+  password: 'root',
+};
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
@@ -17,17 +22,16 @@ export default function LoginScreen() {
       return;
     }
 
-    try {
-      if (rememberMe) {
-        await AsyncStorage.setItem('rememberedEmail', email);
-      } else {
-        await AsyncStorage.removeItem('rememberedEmail');
+    // Demo login check
+    if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
+      try {
+        await AsyncStorage.setItem('userToken', 'demo-token');
+        router.replace('/(tabs)');
+      } catch (err) {
+        setError('An error occurred. Please try again.');
       }
-      
-      // In production, implement actual authentication
-      router.replace('/(tabs)');
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    } else {
+      setError('Invalid credentials');
     }
   };
 
@@ -40,13 +44,26 @@ export default function LoginScreen() {
       <View style={styles.overlay} />
       
       <View style={styles.content}>
-        <View style={styles.header}>
+        <Animated.View 
+          entering={FadeInUp.duration(1000).delay(200)}
+          style={styles.header}
+        >
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Monitor your factory in real-time</Text>
-        </View>
+        </Animated.View>
 
-        <View style={styles.form}>
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <Animated.View 
+          entering={FadeInDown.duration(1000).delay(400)}
+          style={styles.form}
+        >
+          {error ? (
+            <Animated.Text 
+              entering={FadeInDown.duration(400)}
+              style={styles.errorText}
+            >
+              {error}
+            </Animated.Text>
+          ) : null}
           
           <View style={styles.inputContainer}>
             <Mail size={20} color="#666" style={styles.inputIcon} />
@@ -89,20 +106,9 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.rememberContainer}>
-            <View style={styles.rememberMe}>
-              <Switch
-                value={rememberMe}
-                onValueChange={setRememberMe}
-                trackColor={{ false: '#ddd', true: '#007AFF' }}
-                thumbColor={Platform.OS === 'ios' ? '#fff' : rememberMe ? '#fff' : '#f4f3f4'}
-              />
-              <Text style={styles.rememberText}>Remember me</Text>
-            </View>
-            <Link href="/forgot-password" style={styles.forgotPassword}>
-              Forgot Password?
-            </Link>
-          </View>
+          <Link href="/forgot-password" style={styles.forgotPassword}>
+            Forgot Password?
+          </Link>
 
           <TouchableOpacity 
             style={styles.loginButton} 
@@ -118,7 +124,15 @@ export default function LoginScreen() {
               Sign Up
             </Link>
           </View>
-        </View>
+
+          {Platform.OS === 'web' && (
+            <View style={styles.demoCredentials}>
+              <Text style={styles.demoTitle}>Demo Credentials</Text>
+              <Text style={styles.demoText}>Email: {DEMO_CREDENTIALS.email}</Text>
+              <Text style={styles.demoText}>Password: {DEMO_CREDENTIALS.password}</Text>
+            </View>
+          )}
+        </Animated.View>
       </View>
     </View>
   );
@@ -177,6 +191,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 14,
     textAlign: 'center',
+    backgroundColor: 'rgba(255,59,48,0.1)',
+    padding: 8,
+    borderRadius: 8,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -198,20 +215,11 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: 8,
   },
-  rememberContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rememberMe: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  rememberText: {
+  forgotPassword: {
     fontFamily: 'Inter-Regular',
+    color: '#007AFF',
     fontSize: 14,
-    color: '#666',
+    textAlign: 'right',
   },
   loginButton: {
     backgroundColor: '#007AFF',
@@ -225,11 +233,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     color: '#fff',
     fontSize: 16,
-  },
-  forgotPassword: {
-    fontFamily: 'Inter-Regular',
-    color: '#007AFF',
-    fontSize: 14,
   },
   registerContainer: {
     flexDirection: 'row',
@@ -247,5 +250,25 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     color: '#007AFF',
     fontSize: 14,
+  },
+  demoCredentials: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#f0f9ff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  demoTitle: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    color: '#007AFF',
+    marginBottom: 8,
+  },
+  demoText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
   },
 });

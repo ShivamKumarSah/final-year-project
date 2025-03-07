@@ -6,13 +6,13 @@ import { Camera, Mail, Phone, Building2, MapPin } from 'lucide-react-native';
 export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
+    name: 'Shivam Kumar Sah',
+    email: 'sahfamily91@gmail.com',
+    phone: '+91 7003363675',
     company: 'Tech Manufacturing Inc.',
-    location: 'San Francisco, CA',
+    location: 'Kolkata, India',
     role: 'Maintenance Manager',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=300&auto=format&fit=crop',
+    avatar: 'https://media.licdn.com/dms/image/v2/D5603AQFtJ-7SJGlGRw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1725761228946?e=2147483647&v=beta&t=v8O_hloazegeDKpA5aa6rdLh1V6juozi4NXLenIxghA',
   });
 
   const handleSave = () => {
